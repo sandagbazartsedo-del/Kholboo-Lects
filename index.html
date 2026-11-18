@@ -9,7 +9,8 @@
 </head>
 <body>
   <main class="wrap" id="app"></main>
-  <script src="lectures.js"></script>
+  <!-- lectures.js-г үргэлж шинээр татахын тулд -->
+  <script>document.write('<script src="lectures.js?v=' + Date.now() + '"><\/script>');</script>
   <script src="app.js"></script>
 </body>
 </html>
