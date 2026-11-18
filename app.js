@@ -69,6 +69,8 @@
         <dl class="terms">${l.terms.map(t => `<div><dt>${esc(t.term)}</dt><dd>${esc(t.meaning)}</dd></div>`).join("")}</dl>
       </section>` : ""}
 
+      ${l.homework ? `<section class="section"><h3>Гэрийн даалгавар</h3><p>${esc(l.homework)}</p></section>` : ""}
+
       <section class="section"><h3>Слайд ба бичлэг</h3>
         ${links ? `<div class="links">${links}</div>` : `<p class="empty">Слайд, бичлэг удахгүй нэмэгдэнэ.</p>`}
       </section>
