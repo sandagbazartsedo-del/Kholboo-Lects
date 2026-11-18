@@ -19,9 +19,9 @@
     document.title = COURSE.title;
     app.innerHTML = `
       <header class="head">
-        <span class="eyebrow">Хичээлийн давтлага · ${esc(COURSE.semester)}</span>
+        <span class="eyebrow">${esc(COURSE.school)}</span>
         <h1>${esc(COURSE.title)}</h1>
-        <span class="meta">Багш: ${esc(COURSE.teacher)}</span>
+        <span class="meta">${esc(COURSE.teacher)}</span>
       </header>
       <p class="progress">Нийт ${LECTURES.length} лекц · Та ${done.filter(n => LECTURES.some(l => l.number === n)).length}-ийг давтсан</p>
       <ol class="list">
