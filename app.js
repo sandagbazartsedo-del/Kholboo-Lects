@@ -2,13 +2,22 @@
 (function () {
   const app = document.getElementById("app");
   const KEY = "reviewed-lectures";
+  const HW_KEY = "done-homework";
 
-  function getDone() {
-    try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; }
+  function load(key) {
+    try { return JSON.parse(localStorage.getItem(key)) || []; } catch (e) { return []; }
   }
-  function setDone(list) {
-    try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) {}
+  function save(key, list) {
+    try { localStorage.setItem(key, JSON.stringify(list)); } catch (e) {}
   }
+  const getDone = () => load(KEY);
+  const setDone = list => save(KEY, list);
+  const getHw = () => load(HW_KEY);
+  function toggleHw(n) {
+    const list = getHw();
+    save(HW_KEY, list.includes(n) ? list.filter(x => x !== n) : list.concat(n));
+  }
+  const hasHw = l => String(l.homework ?? "").trim() !== "";
   function esc(s) {
     return String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   }
@@ -22,7 +31,10 @@
         <span class="eyebrow">${esc(COURSE.school)}</span>
         <h1>${esc(COURSE.title)}</h1>
         <span class="meta">${esc(COURSE.teacher)}</span>
-        <a class="hero-btn" href="#lectures">Лекцүүдийг үзэх</a>
+        <div class="hero-actions">
+          <a class="hero-btn" href="#lectures">Лекцүүдийг үзэх</a>
+          <a class="hero-btn" href="#homework">Гэрийн даалгавар</a>
+        </div>
       </header>
       <p class="progress">Нийт ${LECTURES.length} лекц · Та ${done.filter(n => LECTURES.some(l => l.number === n)).length}-ийг давтсан</p>
       <ol class="list" id="lectures">
@@ -70,7 +82,9 @@
         <dl class="terms">${l.terms.map(t => `<div><dt>${esc(t.term)}</dt><dd>${esc(t.meaning)}</dd></div>`).join("")}</dl>
       </section>` : ""}
 
-      ${l.homework ? `<section class="section"><h3>Гэрийн даалгавар</h3><p>${esc(l.homework)}</p></section>` : ""}
+      ${hasHw(l) ? `<section class="section hw-section"><h3>Гэрийн даалгавар</h3>${hwBody(l)}
+        <a class="hw-all" href="#homework">Бүх гэрийн даалгавар →</a>
+      </section>` : ""}
 
       <section class="section"><h3>Слайд ба бичлэг</h3>
         ${links ? `<div class="links">${links}</div>` : `<p class="empty">Слайд, бичлэг удахгүй нэмэгдэнэ.</p>`}
@@ -99,6 +113,7 @@
       a.hidden = !a.hidden;
       b.textContent = a.hidden ? "Хариултыг харах" : "Хариултыг нуух";
     }));
+    bindHw(() => renderLecture(n));
     document.getElementById("mark").addEventListener("click", () => {
       let list = getDone();
       list = list.includes(n) ? list.filter(x => x !== n) : list.concat(n);
@@ -107,12 +122,48 @@
     });
   }
 
+  // Даалгаврын текст, хугацаа, "хийсэн" товч
+  function hwBody(l) {
+    const done = getHw().includes(l.number);
+    return `
+      ${l.homeworkDue ? `<span class="hw-due">Хугацаа: ${esc(l.homeworkDue)}</span>` : ""}
+      <p class="hw-text">${esc(l.homework)}</p>
+      <button class="btn ${done ? "is-done" : ""}" data-hw="${l.number}" type="button">${done ? "✓ Хийж дууссан" : "Хийж дууссан гэж тэмдэглэх"}</button>`;
+  }
+  function bindHw(rerender) {
+    app.querySelectorAll("[data-hw]").forEach(b => b.addEventListener("click", () => {
+      toggleHw(Number(b.dataset.hw));
+      rerender();
+    }));
+  }
+
+  function renderHomework() {
+    const items = LECTURES.filter(hasHw);
+    const done = getHw().filter(n => items.some(l => l.number === n)).length;
+    document.title = `Гэрийн даалгавар · ${COURSE.title}`;
+    app.innerHTML = `
+      <a class="back" href="#">← Бүх лекц</a>
+      <header class="head">
+        <span class="eyebrow">${esc(COURSE.title)}</span>
+        <h1>Гэрийн даалгавар</h1>
+      </header>
+      <p class="progress">Нийт ${items.length} даалгавар · Та ${done}-ийг хийсэн</p>
+      ${items.length ? `<div class="hw-list">${items.map(l => `
+        <article class="section hw-card ${getHw().includes(l.number) ? "done" : ""}">
+          <a class="hw-lec" href="#lecture-${l.number}"><span class="num">${pad(l.number)}</span><span>Лекц ${l.number} · ${esc(l.title)}</span></a>
+          ${hwBody(l)}
+        </article>`).join("")}</div>` : `<p class="empty foot">Гэрийн даалгавар удахгүй нэмэгдэнэ.</p>`}
+      <p class="foot">Даалгавраа хийж дуусаад «Хийж дууссан» товчийг дарж тэмдэглээрэй. Тэмдэглэл зөвхөн таны төхөөрөмж дээр хадгалагдана.</p>`;
+    bindHw(renderHomework);
+  }
+
   function route() {
     if (location.hash === "#lectures") {
       if (!document.getElementById("lectures")) renderHome();
       document.getElementById("lectures").scrollIntoView({ behavior: "smooth" });
       return;
     }
+    if (location.hash === "#homework") { renderHomework(); window.scrollTo(0, 0); return; }
     const m = location.hash.match(/^#lecture-(\d+)$/);
     m ? renderLecture(Number(m[1])) : renderHome();
     window.scrollTo(0, 0);
