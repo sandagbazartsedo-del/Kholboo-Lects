@@ -56,7 +56,8 @@
     const done = getDone();
     document.title = COURSE.title;
     app.innerHTML = `
-      <header class="head">
+      <header class="head${COURSE.teacherPhoto ? " has-photo" : ""}">
+        ${COURSE.teacherPhoto ? `<img class="teacher-photo" src="${esc(COURSE.teacherPhoto)}" alt="${esc(COURSE.teacher)}" width="160" height="160">` : ""}
         <span class="eyebrow">${esc(COURSE.school)}</span>
         <h1>${esc(COURSE.title)}</h1>
         <span class="meta">${esc(COURSE.teacher)}</span>
