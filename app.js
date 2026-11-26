@@ -22,9 +22,10 @@
         <span class="eyebrow">${esc(COURSE.school)}</span>
         <h1>${esc(COURSE.title)}</h1>
         <span class="meta">${esc(COURSE.teacher)}</span>
+        <a class="hero-btn" href="#lectures">Лекцүүдийг үзэх</a>
       </header>
       <p class="progress">Нийт ${LECTURES.length} лекц · Та ${done.filter(n => LECTURES.some(l => l.number === n)).length}-ийг давтсан</p>
-      <ol class="list">
+      <ol class="list" id="lectures">
         ${LECTURES.map(l => `
           <li class="${done.includes(l.number) ? "done" : ""}">
             <a class="item" href="#lecture-${l.number}">
@@ -107,6 +108,11 @@
   }
 
   function route() {
+    if (location.hash === "#lectures") {
+      if (!document.getElementById("lectures")) renderHome();
+      document.getElementById("lectures").scrollIntoView({ behavior: "smooth" });
+      return;
+    }
     const m = location.hash.match(/^#lecture-(\d+)$/);
     m ? renderLecture(Number(m[1])) : renderHome();
     window.scrollTo(0, 0);
