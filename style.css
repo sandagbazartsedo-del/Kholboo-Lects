@@ -264,3 +264,18 @@ h3 {
   .closing-part { grid-template-columns: 30px 1fr; gap: 10px; padding: 14px; }
   .closing-icon { width: 30px; height: 30px; font-size: 14px; }
 }
+
+/* Уншигдах байдал: пастел дэвсгэр дээрх бичгийг гүн ногоон өнгөөр */
+:root { --hero-ink: #1f3d36; --hero-ink-soft: #3a5a51; }
+.head { color: var(--hero-ink); }
+.head h1 { color: var(--hero-ink); text-shadow: 0 1px 0 rgba(255,255,255,.35); font-weight: 400; }
+.head .eyebrow, .head .meta { color: var(--hero-ink-soft); text-shadow: none; font-weight: 500; }
+.hero-btn {
+  color: var(--hero-ink); border-color: rgba(31,61,54,.55);
+  background: rgba(255,255,255,.35); font-weight: 600;
+}
+.hero-btn:hover { background: rgba(255,255,255,.6); }
+.num { color: var(--hero-ink); font-weight: 600; }
+.done .num { color: #fff; }
+.locked .num { color: #5d6a6f; }
+.vid-icon { color: var(--hero-ink); }
