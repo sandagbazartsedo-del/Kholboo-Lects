@@ -225,3 +225,31 @@ h3 {
 .read-bar.ready { background: var(--accent-soft); }
 .read-track { display: block; height: 5px; border-radius: 999px; background: var(--line); overflow: hidden; }
 .read-track span { display: block; height: 100%; background: linear-gradient(90deg, var(--mint), var(--accent)); transition: width .4s; }
+
+/* Лекцийн төгсгөлийн үг: ёс зүй ба урам өгөх үг */
+.closing {
+  display: grid; gap: 14px; padding: 22px;
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(233,191,162,.35) 0, rgba(233,191,162,0) 60%),
+    radial-gradient(ellipse at 0% 100%, rgba(169,207,192,.4) 0, rgba(169,207,192,0) 60%),
+    var(--surface);
+}
+.closing-part {
+  display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: start;
+  padding: 16px 18px; border-radius: 12px;
+  background: rgba(255,255,255,.75); border-left: 4px solid var(--accent);
+}
+.closing-part.cheer { border-left-color: var(--peach); }
+.closing-icon {
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent); font-size: 18px;
+}
+.cheer .closing-icon { background: #fbefe6; color: var(--signal); }
+.closing h4 { font: 600 15px/1.4 var(--font-body); margin: 0 0 4px; color: var(--ink); }
+.closing p { line-height: 1.7; }
+.cheer p { font-style: italic; }
+@media (max-width: 480px) {
+  .closing { padding: 14px; }
+  .closing-part { grid-template-columns: 30px 1fr; gap: 10px; padding: 14px; }
+  .closing-icon { width: 30px; height: 30px; font-size: 14px; }
+}

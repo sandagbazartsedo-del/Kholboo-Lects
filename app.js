@@ -146,6 +146,8 @@
           </div>`).join("")}</div>
       </section>
 
+      ${closingCard(l)}
+
       <div id="read-end" aria-hidden="true"></div>
       <section class="section mark-section">
         <button class="btn ${done ? "is-done" : "primary"}" id="mark" type="button">${done ? "✓ Бүрэн уншсан" : "Давтаж дууслаа"}</button>
@@ -231,6 +233,25 @@
         <p>Нээхийн тулд:</p>
         <ol>${steps.join("")}</ol>
         <a class="btn primary" href="#lecture-${p.number}">Лекц ${p.number} руу очих</a>
+      </section>`;
+  }
+
+  // Лекцийн төгсгөлийн карт: ёс зүй ба урам өгөх үг (lectures.js-ийн ethics,
+  // encouragement; хоосон бол COURSE.defaultEthics / defaultEncouragement)
+  function closingCard(l) {
+    const pick = (v, d) => String(v ?? "").trim() || String(d ?? "").trim();
+    const ethics = pick(l.ethics, COURSE.defaultEthics);
+    const cheer = pick(l.encouragement, COURSE.defaultEncouragement);
+    if (!ethics && !cheer) return "";
+    return `<section class="section closing" aria-label="Лекцийн төгсгөлийн үг">
+        ${ethics ? `<div class="closing-part">
+          <span class="closing-icon" aria-hidden="true">⚖</span>
+          <div><h4>Мэргэжлийн ёс зүй</h4><p>${esc(ethics)}</p></div>
+        </div>` : ""}
+        ${cheer ? `<div class="closing-part cheer">
+          <span class="closing-icon" aria-hidden="true">✦</span>
+          <div><h4>Танд урам өгөх үг</h4><p>${esc(cheer)}</p></div>
+        </div>` : ""}
       </section>`;
   }
 
