@@ -150,3 +150,26 @@ h3 {
 /* Лекцийн хуудасны толгой нүүрнийхээс жаахан бага */
 .back + .head { padding-block: clamp(36px, 6vw, 64px); }
 .back + .head h1 { font-size: clamp(28px, 5vw, 46px); }
+
+/* Гэрийн даалгавар */
+.hero-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 18px; }
+.hero-actions .hero-btn { margin-top: 0; }
+.hw-list { display: grid; gap: 0; }
+.hw-section, .hw-card { display: grid; gap: 14px; justify-items: start; }
+.hw-section h3 { margin-bottom: 0; }
+.hw-card { border-left: 4px solid var(--peach); }
+.hw-card.done { border-left-color: var(--accent); }
+.hw-lec {
+  display: flex; align-items: center; gap: 14px;
+  font-weight: 600; color: var(--ink); text-decoration: none;
+}
+.hw-lec:hover span:last-child { color: var(--accent); }
+.hw-lec .num { flex: none; width: 40px; height: 40px; font-size: 14px; }
+.hw-card.done .num { background: var(--accent); }
+.hw-text { line-height: 1.7; }
+.hw-due {
+  font: 13px var(--font-mono); color: var(--signal);
+  background: #fbefe6; padding: 3px 12px; border-radius: 999px;
+}
+.btn.is-done { background: var(--accent-soft); border-color: transparent; }
+.hw-all { font-size: 14px; text-decoration: none; }
