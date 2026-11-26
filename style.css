@@ -200,3 +200,28 @@ h3 {
 }
 .vid-desc { margin: 6px 0 0 36px !important; font-size: 14px; color: var(--muted); }
 @media (max-width: 480px) { .vid-desc { margin-left: 0 !important; } }
+
+/* Лекцийн түгжээ ба унших явц */
+.locked .item { opacity: .62; }
+.locked .num { background: #c9d1d4; }
+.locked .badge { color: var(--muted); }
+.hw-card.locked { border-left-color: var(--line); }
+.locked-note { display: grid; gap: 12px; justify-items: start; }
+.locked-note h3 { margin: 0; }
+.locked-note ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.mark-section { display: grid; gap: 10px; justify-items: start; }
+.read-hint { font-size: 14px; color: var(--muted); }
+.read-hint:empty { display: none; }
+.btn.waiting { opacity: .5; cursor: not-allowed; }
+.btn.is-locked { border-color: var(--line); color: var(--muted); cursor: not-allowed; }
+.btn.is-locked:hover { background: transparent; }
+.hw-how { font-size: 14px; color: var(--muted); }
+.read-bar {
+  position: sticky; bottom: max(12px, env(safe-area-inset-bottom, 0px)); z-index: 5;
+  margin-top: 18px; padding: 10px 16px; border-radius: 14px;
+  display: grid; gap: 6px; font-size: 13px; color: var(--ink);
+  background: rgba(255,255,255,.96); box-shadow: 0 6px 24px rgba(30, 50, 45, .14);
+}
+.read-bar.ready { background: var(--accent-soft); }
+.read-track { display: block; height: 5px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.read-track span { display: block; height: 100%; background: linear-gradient(90deg, var(--mint), var(--accent)); transition: width .4s; }

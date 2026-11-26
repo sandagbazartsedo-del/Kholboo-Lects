@@ -23,6 +23,35 @@
   }
   const pad = n => String(n).padStart(2, "0");
 
+  // ---- Лекцийн түгжээ ----
+  // Лекц 1 үргэлж нээлттэй. Дараагийн лекц нь өмнөх лекцээ бүрэн уншиж
+  // («Давтаж дууслаа» дарсан), гэрийн даалгавартай бол түүнийгээ илгээсэн
+  // үед нээгдэнэ. lectures.js дотор COURSE.lockLectures: false гэвэл түгжээ унтарна.
+  const lockOn = () => COURSE.lockLectures !== false;
+  const WPM = 150; // минутад уншдаг үгийн дундаж тоо
+  const isRead = n => getDone().includes(n);
+  const hwOk = l => !hasHw(l) || getHw().includes(l.number);
+  function isOpen(i) {
+    if (!lockOn() || i <= 0) return true;
+    const p = LECTURES[i - 1];
+    return isOpen(i - 1) && isRead(p.number) && hwOk(p);
+  }
+  // Лекцийн текстийн урттай уялдуулсан хамгийн бага унших хугацаа (секунд)
+  function minReadSecs(l) {
+    if (l.minReadMinutes) return Math.round(l.minReadMinutes * 60);
+    const text = [l.summary, ...(l.keyPoints || []), ...(l.terms || []).map(t => t.term + " " + t.meaning),
+      ...(l.questions || []).map(q => q.q), l.homework || ""].join(" ");
+    const words = text.split(/\s+/).filter(Boolean).length;
+    return Math.min(600, Math.max(60, Math.round(words / WPM * 60)));
+  }
+  // Одоо уншиж буй лекцийн явц (хуудсаа шинэчлэхэд эхнээс нь тоолно)
+  let reading = null, timer = null, observer = null;
+  function stopReading() {
+    clearInterval(timer); timer = null;
+    observer?.disconnect(); observer = null;
+  }
+  const fmt = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+
   function renderHome() {
     const done = getDone();
     document.title = COURSE.title;
@@ -38,19 +67,19 @@
       </header>
       <p class="progress">Нийт ${LECTURES.length} лекц · Та ${done.filter(n => LECTURES.some(l => l.number === n)).length}-ийг давтсан</p>
       <ol class="list" id="lectures">
-        ${LECTURES.map(l => `
-          <li class="${done.includes(l.number) ? "done" : ""}">
+        ${LECTURES.map((l, i) => `
+          <li class="${done.includes(l.number) ? "done" : ""} ${isOpen(i) ? "" : "locked"}">
             <a class="item" href="#lecture-${l.number}">
               <span class="num">${pad(l.number)}</span>
               <span class="item-body">
                 <span class="item-title">${esc(l.title)}</span>
                 ${l.date ? `<span class="item-date">${esc(l.date)}</span>` : ""}
               </span>
-              <span class="badge">${done.includes(l.number) ? "✓ Давтсан" : "Давтах →"}</span>
+              <span class="badge">${!isOpen(i) ? "🔒 Түгжээтэй" : done.includes(l.number) ? "✓ Давтсан" : "Давтах →"}</span>
             </a>
           </li>`).join("")}
       </ol>
-      <p class="foot">Лекц бүрийн дараа энд орж товч агуулга, гол санаа, асуултаар давтаарай.</p>`;
+      <p class="foot">Лекц бүрийн дараа энд орж товч агуулга, гол санаа, асуултаар давтаарай.${lockOn() ? " Лекцээ бүрэн уншиж, гэрийн даалгавраа илгээсний дараа дараагийн лекц нээгдэнэ." : ""}</p>`;
   }
 
   function renderLecture(n) {
@@ -59,6 +88,9 @@
     const l = LECTURES[i], prev = LECTURES[i - 1], next = LECTURES[i + 1];
     const done = getDone().includes(n);
     document.title = `Лекц ${n} · ${COURSE.title}`;
+    if (!isOpen(i)) return renderLocked(l, prev);
+    if (reading?.n !== n) { stopReading(); reading = { n, secs: 0, bottom: false, need: minReadSecs(l) }; }
+    const nextOpen = next && isOpen(i + 1);
 
     const links = [
       l.slides && `<a class="btn" href="${esc(l.slides)}" target="_blank" rel="noopener">Слайд үзэх</a>`,
@@ -114,14 +146,19 @@
           </div>`).join("")}</div>
       </section>
 
-      <section class="section">
-        <button class="btn ${done ? "" : "primary"}" id="mark" type="button">${done ? "✓ Давтсан гэж тэмдэглэсэн" : "Давтаж дууслаа"}</button>
+      <div id="read-end" aria-hidden="true"></div>
+      <section class="section mark-section">
+        <button class="btn ${done ? "is-done" : "primary"}" id="mark" type="button">${done ? "✓ Бүрэн уншсан" : "Давтаж дууслаа"}</button>
+        <p class="read-hint" id="read-hint">${done && lockOn() && next && !hwOk(l) ? `Дараагийн лекцийг нээхийн тулд дээрх гэрийн даалгавраа ${COURSE.homeworkForm ? "зургаар илгээнэ" : "хийж тэмдэглэнэ"} үү.` : ""}</p>
       </section>
 
       <nav class="pager">
         ${prev ? `<a class="btn" href="#lecture-${prev.number}">← Лекц ${prev.number}</a>` : "<span></span>"}
-        ${next ? `<a class="btn" href="#lecture-${next.number}">Лекц ${next.number} →</a>` : ""}
-      </nav>`;
+        ${next ? (nextOpen
+          ? `<a class="btn" href="#lecture-${next.number}">Лекц ${next.number} →</a>`
+          : `<span class="btn is-locked" title="${esc(lockReason(l))}">🔒 Лекц ${next.number}</span>`) : ""}
+      </nav>
+      ${lockOn() && !done ? `<div class="read-bar" id="read-bar" role="status"></div>` : ""}`;
 
     app.querySelectorAll(".q button").forEach(b => b.addEventListener("click", () => {
       const a = document.getElementById("ans-" + b.dataset.k);
@@ -130,20 +167,87 @@
     }));
     bindHw(() => renderLecture(n));
     document.getElementById("mark").addEventListener("click", () => {
-      let list = getDone();
-      list = list.includes(n) ? list.filter(x => x !== n) : list.concat(n);
-      setDone(list);
+      if (done) return; // уншсан тэмдэглэгээг буцааж болохгүй, эс тэгвээс дараагийн лекц дахин түгжигдэнэ
+      if (lockOn() && !readyToMark()) return updateReading();
+      setDone(getDone().concat(n));
+      stopReading();
       renderLecture(n);
     });
+    if (lockOn() && !done) startReading();
+  }
+
+  const readyToMark = () => reading && reading.bottom && reading.secs >= reading.need;
+  function updateReading() {
+    const bar = document.getElementById("read-bar"), hint = document.getElementById("read-hint");
+    const btn = document.getElementById("mark");
+    if (!bar || !reading) return;
+    const left = Math.max(0, reading.need - reading.secs);
+    const pct = Math.min(100, Math.round(reading.secs / reading.need * 100));
+    let msg;
+    if (readyToMark()) msg = "Та лекцийг бүрэн уншлаа. «Давтаж дууслаа» товчийг дарна уу.";
+    else if (left > 0 && !reading.bottom) msg = `Лекцийг доош нь хүртэл анхааралтай уншаарай · ${fmt(left)} үлдсэн`;
+    else if (left > 0) msg = `Яарахгүй, дахин нэг харна уу · ${fmt(left)} үлдсэн`;
+    else msg = "Лекцийн төгсгөл хүртэл доош гүйлгэж уншаарай.";
+    bar.innerHTML = `<span class="read-track"><span style="width:${reading.bottom ? pct : Math.min(pct, 95)}%"></span></span><span>${msg}</span>`;
+    bar.classList.toggle("ready", readyToMark());
+    btn.classList.toggle("waiting", !readyToMark());
+    btn.setAttribute("aria-disabled", String(!readyToMark()));
+    hint.textContent = readyToMark() ? "" : "Лекцийг бүрэн уншсаны дараа энэ товч идэвхжинэ.";
+  }
+  function startReading() {
+    const end = document.getElementById("read-end");
+    observer?.disconnect();
+    observer = new IntersectionObserver(es => {
+      if (es.some(e => e.isIntersecting)) { reading.bottom = true; updateReading(); }
+    });
+    observer.observe(end);
+    if (!timer) timer = setInterval(() => {
+      if (document.visibilityState === "visible" && document.hasFocus()) { reading.secs++; updateReading(); }
+    }, 1000);
+    updateReading();
+  }
+
+  function lockReason(l) {
+    const parts = [];
+    if (!isRead(l.number)) parts.push(`Лекц ${l.number}-ийг бүрэн уншиж «Давтаж дууслаа» дарах`);
+    if (!hwOk(l)) parts.push(`Лекц ${l.number}-ийн гэрийн даалгаврыг ${COURSE.homeworkForm ? "зургаар илгээх" : "хийж тэмдэглэх"}`);
+    return parts.join(", ");
+  }
+  function renderLocked(l, prev) {
+    stopReading();
+    let p = prev;
+    while (LECTURES.indexOf(p) > 0 && !isOpen(LECTURES.indexOf(p))) p = LECTURES[LECTURES.indexOf(p) - 1];
+    const steps = [];
+    if (!isRead(p.number)) steps.push(`<li>Лекц ${p.number}-ийг бүрэн уншиж, «Давтаж дууслаа» товчийг дарах</li>`);
+    if (!hwOk(p)) steps.push(`<li>Лекц ${p.number}-ийн гэрийн даалгаврыг ${COURSE.homeworkForm ? "хийж, зургаар илгээх" : "хийж дуусгаад тэмдэглэх"}</li>`);
+    app.innerHTML = `
+      <a class="back" href="#">← Бүх лекц</a>
+      <header class="head">
+        <span class="eyebrow">Лекц ${pad(l.number)}</span>
+        <h1>${esc(l.title)}</h1>
+      </header>
+      <section class="section locked-note">
+        <h3>🔒 Энэ лекц одоогоор түгжээтэй</h3>
+        <p>Нээхийн тулд:</p>
+        <ol>${steps.join("")}</ol>
+        <a class="btn primary" href="#lecture-${p.number}">Лекц ${p.number} руу очих</a>
+      </section>`;
   }
 
   // Даалгаврын текст, хугацаа, "хийсэн" товч
   function hwBody(l) {
     const done = getHw().includes(l.number);
+    const form = COURSE.homeworkForm;
     return `
       ${l.homeworkDue ? `<span class="hw-due">Хугацаа: ${esc(l.homeworkDue)}</span>` : ""}
       <p class="hw-text">${esc(l.homework)}</p>
-      <button class="btn ${done ? "is-done" : ""}" data-hw="${l.number}" type="button">${done ? "✓ Хийж дууссан" : "Хийж дууссан гэж тэмдэглэх"}</button>`;
+      ${form ? `<p class="hw-how">Даалгавраа хийгээд зургийг нь доорх товчоор илгээнэ. Маягтын «Лекц» хэсэгт <b>Лекц ${l.number}</b> гэж бичээрэй.</p>` : ""}
+      <div class="links">
+        ${form ? `<a class="btn primary" href="${esc(form)}" target="_blank" rel="noopener">📷 Зургаа илгээх</a>` : ""}
+        <button class="btn ${done ? "is-done" : ""}" data-hw="${l.number}" type="button">${done
+          ? (form ? "✓ Илгээсэн" : "✓ Хийж дууссан")
+          : (form ? "Илгээсэн гэж тэмдэглэх" : "Хийж дууссан гэж тэмдэглэх")}</button>
+      </div>`;
   }
   function bindHw(rerender) {
     app.querySelectorAll("[data-hw]").forEach(b => b.addEventListener("click", () => {
@@ -163,16 +267,20 @@
         <h1>Гэрийн даалгавар</h1>
       </header>
       <p class="progress">Нийт ${items.length} даалгавар · Та ${done}-ийг хийсэн</p>
-      ${items.length ? `<div class="hw-list">${items.map(l => `
-        <article class="section hw-card ${getHw().includes(l.number) ? "done" : ""}">
+      ${items.length ? `<div class="hw-list">${items.map(l => {
+        const open = isOpen(LECTURES.indexOf(l));
+        return `
+        <article class="section hw-card ${getHw().includes(l.number) ? "done" : ""} ${open ? "" : "locked"}">
           <a class="hw-lec" href="#lecture-${l.number}"><span class="num">${pad(l.number)}</span><span>Лекц ${l.number} · ${esc(l.title)}</span></a>
-          ${hwBody(l)}
-        </article>`).join("")}</div>` : `<p class="empty foot">Гэрийн даалгавар удахгүй нэмэгдэнэ.</p>`}
-      <p class="foot">Даалгавраа хийж дуусаад «Хийж дууссан» товчийг дарж тэмдэглээрэй. Тэмдэглэл зөвхөн таны төхөөрөмж дээр хадгалагдана.</p>`;
+          ${open ? hwBody(l) : `<p class="empty">🔒 Лекц нээгдсэний дараа энэ даалгавар харагдана.</p>`}
+        </article>`;
+      }).join("")}</div>` : `<p class="empty foot">Гэрийн даалгавар удахгүй нэмэгдэнэ.</p>`}
+      <p class="foot">Даалгавраа ${COURSE.homeworkForm ? "зургаар илгээгээд «Илгээсэн»" : "хийж дуусаад «Хийж дууссан»"} товчийг дарж тэмдэглээрэй. Тэмдэглэл зөвхөн таны төхөөрөмж дээр хадгалагдана.</p>`;
     bindHw(renderHomework);
   }
 
   function route() {
+    if (!/^#lecture-\d+$/.test(location.hash)) { stopReading(); reading = null; }
     if (location.hash === "#lectures") {
       if (!document.getElementById("lectures")) renderHome();
       document.getElementById("lectures").scrollIntoView({ behavior: "smooth" });
