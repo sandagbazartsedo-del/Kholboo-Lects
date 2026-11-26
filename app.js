@@ -87,7 +87,22 @@
       </section>` : ""}
 
       <section class="section"><h3>Слайд ба бичлэг</h3>
-        ${links ? `<div class="links">${links}</div>` : `<p class="empty">Слайд, бичлэг удахгүй нэмэгдэнэ.</p>`}
+        ${links ? `<div class="links">${links}</div>` : (l.videos?.length ? "" : `<p class="empty">Слайд, бичлэг удахгүй нэмэгдэнэ.</p>`)}
+        ${l.videos?.length ? `
+          ${l.videosNote ? `<p class="vid-note">${esc(l.videosNote)}</p>` : ""}
+          <div class="vid-groups">${l.videos.map(g => `
+            <div class="vid-group">
+              <h4>${esc(g.topic)}</h4>
+              ${g.note ? `<p class="vid-gnote">${esc(g.note)}</p>` : ""}
+              <ul class="vid-list">${(g.items || []).map(v => `
+                <li>
+                  <a class="vid-link" href="${esc(v.url)}" target="_blank" rel="noopener">
+                    <span class="vid-icon" aria-hidden="true">${v.kind ? "📄" : "▶"}</span>
+                    <span>${esc(v.title)}${v.kind ? ` <span class="vid-kind">${esc(v.kind)}</span>` : ""}</span>
+                  </a>
+                  ${v.note ? `<p class="vid-desc">${esc(v.note)}</p>` : ""}
+                </li>`).join("")}</ul>
+            </div>`).join("")}</div>` : ""}
       </section>
 
       <section class="section"><h3>Өөрийгөө шалгах асуултууд</h3>
