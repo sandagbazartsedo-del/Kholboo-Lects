@@ -1,28 +1,20 @@
-/* Layout: narrow reading column; lectures as a numbered list read like a signal timeline */
+/* Загвар: зөөлөн пастел (ногоон → тоорын өнгө) градиенттай толгой, нимгэн цагаан гарчиг, хөнгөн цайвар хуудас */
 :root {
-  --bg: #f5f7f8;
+  --bg: #f2f4f6;
   --surface: #ffffff;
-  --ink: #14232b;
-  --muted: #56666f;
-  --line: #d6dfe3;
-  --accent: #0b6e7f;      /* дохионы шугамын өнгө */
-  --signal: #c7791a;      /* анхааруулах дохионы өнгө */
-  --accent-soft: #e0f0f2;
-  --font-display: "Unbounded", "Segoe UI", system-ui, sans-serif;
-  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --ink: #26323a;
+  --muted: #6b7880;
+  --line: #e3e8ea;
+  --mint: #a9cfc0;
+  --sage: #c4d6c8;
+  --peach: #e9bfa2;
+  --accent: #3f8d78;      /* гүн гаа ногоон */
+  --accent-soft: #e4f3ee;
+  --signal: #c98a62;      /* тоорын гүн өнгө */
+  --font-display: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Manrope", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0f171b; --surface: #162228; --ink: #e3ecef; --muted: #98a9b1;
-    --line: #2a3a42; --accent: #4fc0cf; --signal: #e9a34a; --accent-soft: #15323a;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0f171b; --surface: #162228; --ink: #e3ecef; --muted: #98a9b1;
-  --line: #2a3a42; --accent: #4fc0cf; --signal: #e9a34a; --accent-soft: #15323a;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 * { box-sizing: border-box; }
@@ -30,89 +22,131 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font: 16px/1.6 var(--font-body);
+  font: 16px/1.65 var(--font-body);
 }
 .wrap {
-  max-width: 760px;
+  max-width: 880px;
   margin: 0 auto;
-  padding-block: 32px 64px;
+  padding-block: 24px 64px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 a { color: var(--accent); }
-a:focus-visible, button:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
-/* Толгой хэсэг */
-.head { display: grid; gap: 8px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+/* Толгой хэсэг: пастел градиент, голдоо нимгэн цагаан гарчиг */
+.head {
+  position: relative; overflow: hidden;
+  display: grid; justify-items: center; gap: 14px; text-align: center;
+  padding: clamp(48px, 9vw, 96px) clamp(20px, 5vw, 56px);
+  border-radius: 4px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 50% 95%, rgba(255,255,255,.55) 0, rgba(255,255,255,0) 28%),
+    radial-gradient(ellipse at 80% 10%, #e7b89a 0, rgba(231,184,154,0) 55%),
+    radial-gradient(ellipse at 10% 80%, #9fc8b7 0, rgba(159,200,183,0) 60%),
+    linear-gradient(120deg, var(--mint) 0%, var(--sage) 40%, var(--peach) 100%);
+}
+.head > * { position: relative; z-index: 1; }
 .eyebrow {
-  font: 500 12px/1.4 var(--font-mono);
-  letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+  font: 500 13px/1.5 var(--font-body);
+  letter-spacing: .02em; color: rgba(255,255,255,.95);
+  text-shadow: 0 1px 8px rgba(60, 80, 70, .25);
+  max-width: 60ch;
 }
 h1 {
-  font: 600 clamp(24px, 5vw, 34px)/1.2 var(--font-display);
-  margin: 0; text-wrap: balance;
+  font: 300 clamp(34px, 7vw, 64px)/1.08 var(--font-display);
+  letter-spacing: -.02em;
+  margin: 0; text-wrap: balance; color: #fff;
+  text-shadow: 0 2px 18px rgba(60, 80, 70, .28);
 }
-h2 { font: 600 20px/1.3 var(--font-display); margin: 0; text-wrap: balance; }
+h2 { font: 400 22px/1.3 var(--font-display); margin: 0; text-wrap: balance; }
 h3 {
-  font: 500 13px/1.4 var(--font-mono); letter-spacing: .08em; text-transform: uppercase;
-  color: var(--accent); margin: 0 0 8px;
+  font: 400 22px/1.3 var(--font-display); letter-spacing: -.01em;
+  color: var(--ink); margin: 0 0 12px;
 }
-.meta { color: var(--muted); font-size: 14px; }
+.meta {
+  font-size: 14px; color: rgba(255,255,255,.95);
+  text-shadow: 0 1px 8px rgba(60, 80, 70, .25);
+}
+.hero-btn {
+  margin-top: 18px;
+  display: inline-flex; padding: 10px 26px;
+  border: 1px solid rgba(255,255,255,.9); border-radius: 999px;
+  color: #fff; text-decoration: none; font: 500 14px var(--font-body);
+  background: rgba(255,255,255,.08);
+  transition: background-color .15s;
+}
+.hero-btn:hover { background: rgba(255,255,255,.25); }
 
-/* Лекцийн жагсаалт: дохионы шугам */
-.progress { margin: 20px 0 8px; font: 13px var(--font-mono); color: var(--muted); }
-.list { list-style: none; margin: 8px 0 0; padding: 0; position: relative; }
-.list::before {
-  content: ""; position: absolute; left: 21px; top: 12px; bottom: 12px;
-  width: 2px; background: var(--line);
-}
+/* Лекцийн жагсаалт */
+.progress { margin: 32px 0 8px; font: 13px var(--font-mono); color: var(--muted); text-align: center; }
+.list { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 10px; }
 .list li { position: relative; }
 .item {
-  display: grid; grid-template-columns: 44px 1fr auto; gap: 16px; align-items: center;
-  padding: 14px 8px 14px 0; text-decoration: none; color: inherit; border-radius: 8px;
+  display: grid; grid-template-columns: 48px 1fr auto; gap: 18px; align-items: center;
+  padding: 16px 20px; text-decoration: none; color: inherit;
+  background: var(--surface); border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(30, 50, 45, .04);
+  transition: box-shadow .15s, transform .15s;
 }
-.item:hover { background: var(--accent-soft); }
+.item:hover { box-shadow: 0 6px 20px rgba(30, 50, 45, .08); transform: translateY(-1px); }
 .num {
-  width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
-  background: var(--bg); border: 2px solid var(--accent); color: var(--accent);
-  font: 600 14px var(--font-mono); position: relative; z-index: 1;
+  width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--mint), var(--peach));
+  color: #fff; font: 500 16px var(--font-body);
 }
-.done .num { background: var(--accent); color: var(--bg); }
+.done .num { background: var(--accent); }
 .item-body { min-width: 0; }
 .item-title { font-weight: 600; display: block; }
 .item-date { font: 13px var(--font-mono); color: var(--muted); }
 .badge {
-  font: 500 12px var(--font-mono); color: var(--signal); white-space: nowrap;
+  font: 500 13px var(--font-body); color: var(--accent); white-space: nowrap;
+  padding: 5px 14px; border: 1px solid var(--line); border-radius: 999px;
 }
+.done .badge { background: var(--accent-soft); border-color: transparent; }
 
 /* Лекцийн хуудас */
-.back { display: inline-block; margin-bottom: 16px; font-size: 14px; text-decoration: none; }
-.section { padding: 24px 0; border-bottom: 1px solid var(--line); }
-.section p { margin: 0; max-width: 65ch; }
-.points { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
-.terms { display: grid; gap: 10px; margin: 0; }
+.back { display: inline-block; margin-bottom: 14px; font-size: 14px; text-decoration: none; }
+.section {
+  margin-top: 14px; padding: 26px 30px;
+  background: var(--surface); border-radius: 14px;
+}
+.section p { margin: 0; max-width: 68ch; }
+.points { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+.points li::marker { color: var(--signal); }
+.terms { display: grid; gap: 12px; margin: 0; }
 .terms dt { font-weight: 600; }
 .terms dd { margin: 0; color: var(--muted); }
 .links { display: flex; flex-wrap: wrap; gap: 10px; }
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 10px 16px; border: 1px solid var(--accent); border-radius: 6px;
+  padding: 9px 20px; border: 1px solid var(--accent); border-radius: 999px;
   color: var(--accent); background: transparent; text-decoration: none;
-  font: 500 15px var(--font-body); cursor: pointer;
+  font: 500 14px var(--font-body); cursor: pointer;
+  transition: background-color .15s;
 }
-.btn.primary { background: var(--accent); color: var(--bg); }
+.btn:hover { background: var(--accent-soft); }
+.btn.primary { background: var(--accent); color: #fff; }
+.btn.primary:hover { background: #357a67; }
 .empty { color: var(--muted); font-style: italic; }
 
-.q { border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 10px; }
 .qs { display: grid; gap: 12px; }
+.q { background: var(--bg); border-radius: 12px; padding: 16px 18px; display: grid; gap: 10px; }
 .q-text { font-weight: 600; }
-.q-answer { border-left: 3px solid var(--signal); padding-left: 12px; }
-.q button { justify-self: start; padding: 6px 12px; font-size: 14px; }
+.q-answer { border-left: 3px solid var(--mint); padding-left: 12px; color: var(--muted); }
+.q button { justify-self: start; padding: 6px 14px; font-size: 13px; }
 
 .pager { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 24px; }
-.foot { margin-top: 40px; font-size: 13px; color: var(--muted); }
+.foot { margin-top: 32px; font-size: 13px; color: var(--muted); text-align: center; }
 
 @media (max-width: 480px) {
-  .item { grid-template-columns: 44px 1fr; }
-  .badge { grid-column: 2; }
+  .section { padding: 20px; }
+  .item { grid-template-columns: 44px 1fr; padding: 14px 16px; gap: 14px; }
+  .num { width: 44px; height: 44px; }
+  .badge { grid-column: 2; justify-self: start; }
 }
+
+/* Лекцийн хуудасны толгой нүүрнийхээс жаахан бага */
+.back + .head { padding-block: clamp(36px, 6vw, 64px); }
+.back + .head h1 { font-size: clamp(28px, 5vw, 46px); }
